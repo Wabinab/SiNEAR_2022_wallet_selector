@@ -10,11 +10,13 @@ export default function Messages({ messages }) {
           {messages.map((message, i) =>
             // TODO: format as cards, add timestamp
             <li className="articles" key={i}>
-              <p key={i} className={message.premium ? 'is-premium' : ''}>
-                <h4>{message.sender}</h4>
-                (on <u className="articles">{message.date}</u>)<br/><br />
-                <strong>Message: </strong>{message.text}
-              </p>
+              <a href={"/message/" + i} className="articles">
+                <p key={i} className={message.premium ? 'is-premium' : ''}>
+                  <strong className='articles'>{message.sender}</strong><br/>
+                  (on <u className="articles">{message.datetime}</u>)<br/><br />
+                  <b>Message: </b>{message.text}
+                </p>
+              </a>
             </li>
           ).reverse()}
         </ul>

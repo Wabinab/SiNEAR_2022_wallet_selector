@@ -139,7 +139,7 @@ button {
     background-color: orange;
   }
 
-  h4 {
+  strong {
     margin-top: 0.2em;
     color: crimson;
     // margin-bottom: -0.5em;
@@ -147,5 +147,10 @@ button {
 
   u {
     color: forestgreen;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
   }
 }

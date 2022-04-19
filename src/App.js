@@ -14,7 +14,7 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
 
   useEffect(() => {
     // TODO: don't just fetch once; subscribe!
-    contract.getMessages().then(setMessages);
+    contract.get_messages().then(setMessages);
   }, []);
 
   const onSubmit = (e) => {
@@ -27,15 +27,15 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
     // TODO: optimistically update page with new message,
     // update blockchain data in background
     // add uuid to each message, so we know which one is already known
-    contract.addMessage(
+    contract.add_message(
       { 
         text: message.value,
-        date: Date(Date.now()).toString(),
+        datetime: Date(Date.now()).toString(),
       },
       BOATLOAD_OF_GAS,
       Big(donation.value || '0').times(10 ** 24).toFixed()
     ).then(() => {
-      contract.getMessages().then(messages => {
+      contract.get_messages().then(messages => {
         setMessages(messages);
         message.value = '';
         donation.value = SUGGESTED_DONATION;
@@ -47,7 +47,7 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
 
   const signIn = () => {
     wallet.requestSignIn(
-      {contractId: nearConfig.contractName, methodNames: [contract.addMessage.name]}, //contract requesting access
+      {contractId: nearConfig.contractName, methodNames: [contract.add_message.name]}, //contract requesting access
       'NEAR Guest Book', //optional name
       null, //optional URL to redirect to if the sign in was successful
       null //optional URL to redirect to if the sign in was NOT successful
@@ -69,18 +69,18 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
         }
       </header>
       { currentUser
-        ? <Form onSubmit={onSubmit} currentUser={currentUser} />
+        ? <Form onSubmit={onSubmit} currentUser={currentUser} current_page={window.location.pathname} contract={contract} />
         : <SignIn/>
       }
-      { !!currentUser && !!messages.length && <Messages messages={messages}/> }
+      { !!currentUser && !!messages.length && !!(window.location.pathname == '/') && <Messages messages={messages}/>}
     </main>
   );
 };
 
 App.propTypes = {
   contract: PropTypes.shape({
-    addMessage: PropTypes.func.isRequired,
-    getMessages: PropTypes.func.isRequired
+    add_message: PropTypes.func.isRequired,
+    get_messages: PropTypes.func.isRequired
   }).isRequired,
   currentUser: PropTypes.shape({
     accountId: PropTypes.string.isRequired,
