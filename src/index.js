@@ -50,6 +50,8 @@ async function initContract() {
     }
   );
 
+  // window.contract = contract;
+
   return { contract, currentUser, nearConfig, walletConnection };
 }
 
