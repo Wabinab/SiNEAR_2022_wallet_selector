@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "license": "(MIT AND Apache-2.0)",
   "scripts": {
-    "build": "npm run build:contract && npm run build:web",
+    "build": "npm run build:web --output public",
     "build:contract": "node contract/compile.js && wasm-opt -Os -o out/main.wasm out/main.wasm",
     "build:contract:debug": "node contract/compile.js --debug",
     "build:web": "parcel build src/index.html --public-url ./",
