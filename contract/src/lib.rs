@@ -99,10 +99,10 @@ impl MessageList {
 
 
     /// Get a single message
-    pub fn get_single_message(&self, index: u64) -> PostedMessage {
+    pub fn get_single_message(&self, index: u64) -> Vec<PostedMessage> {
       match self.messages.get(index) {
-        Some(message) => message,
-        None => PostedMessage::default()
+        Some(message) => vec![message],
+        None => vec![PostedMessage::default()]
       }
     }
 }
