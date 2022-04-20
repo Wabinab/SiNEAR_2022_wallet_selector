@@ -13,7 +13,7 @@ const render_based_on_page = (current_page, get_single_message)  => {
   });
 
   get_single_message(
-    parseInt(current_page.split('/')[2])
+    parseInt(current_page.split('/')[1])
   ).then((message) => {
     setMessage(message[0]);
   });
