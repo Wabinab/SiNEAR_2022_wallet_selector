@@ -2,38 +2,39 @@ use near_sdk::{env, near_bindgen, AccountId};
 use near_sdk::json_types::U128;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::{Serialize};
-
 use near_sdk::collections::{Vector};
-use chrono;
+
 use std::cmp::min;
+use near_helper::{yoctonear_to_near, expect_lightweight};
 
 
 const MESSAGE_LIMIT: u64 = 10;
 const PREMIUM_LIMIT: u128 = 10_000_000_000_000_000_000_000;
 
 
-#[serde(crate = "near_sdk::serde")]
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, Debug, Clone, Serialize)]
+#[serde(crate = "near_sdk::serde")]
 pub struct PostedMessage {
     premium: bool,
+    money: f64,
     sender: AccountId,
     text: String,
-    date: String,
+    datetime: String,
 }
 
-/// Not intended to use in smart contract. INTERNAL USE ONLY. 
+/// INTERNAL USE ONLY. 
 impl Default for PostedMessage {
   fn default() -> Self {
     Self {
       premium: false,
-      sender: "none".parse().unwrap(),
+      money: 0f64,
+      sender: "not_found".parse().unwrap(),
       text: "".to_owned(),
-      date: "".to_owned()
+      datetime: "".to_owned()
     }
   }
 }
-
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -49,46 +50,35 @@ impl Default for MessageList {
     }
 }
 
-impl MessageList {
-
-}
 
 
-// We use camelCase, against all odds,
-// so we don't need to change anything in the pre-existing frontend. 
 
 #[near_bindgen]
 impl MessageList {
-    // https://stackoverflow.com/questions/63210984/chrono-kills-my-rust-webassembly-function
-    // #[cfg(all(target_arch = "wasm32", not(target_os = "wasi"), feature = "wasmbind"))]
-    // pub fn now(&mut self) -> DateTime<Utc> {
-    //     let now = js_sys::Date::new_0();
-    //     DateTime::<Utc>::from(now)
-    // }
-   
-
+    /// Add a message. Include the datetime. 
     #[payable]
-    pub fn addMessage(&mut self, text: String, date: String) {
-      // if locality {
-      //   let date = chrono::offset::Utc::now().to_string();
-      // } else {
-      //   let date = chrono::offset::Local::now().to_string();
-      // }
+    pub fn add_message(&mut self, text: String, datetime: String) {
+
+      let mut money = 0f64;
+      if env::attached_deposit() > 0u128 {
+        money = yoctonear_to_near(env::attached_deposit());
+      }
 
       let message = PostedMessage {
         premium: env::attached_deposit() >= PREMIUM_LIMIT,
-        // money: env::attached_deposit(),
+        money: money,
         sender: env::signer_account_id(),
         text,
-        // date: self.now().to_string(),
-        date
+        datetime
       };
 
       self.messages.push(&message);
     }
 
-    // #[result_serializer(borsh)]
-    pub fn getMessages(&self) -> Vec<PostedMessage> {
+
+    // Cannot borsh serialize
+    /// Get latest 10 messages. 
+    pub fn get_messages(&self) -> Vec<PostedMessage> {
       let num_messages = min(MESSAGE_LIMIT, self.messages.len());
       let start_index = self.messages.len() - num_messages;
       let init_message: PostedMessage = match self.messages.get(0) {
@@ -104,16 +94,16 @@ impl MessageList {
         }
       }
 
-      // for i in 0..num_messages {
-      //   self.messages.get(i + start_index)
-      // }
-
-      // for i in 0..num_messages {
-      //   result[i] = self.messages.get(i + start_index);
-      // }
-
       arr
-      // self.messages.to_vec()
+    }
+
+
+    /// Get a single message
+    pub fn get_single_message(&self, index: u64) -> PostedMessage {
+      match self.messages.get(index) {
+        Some(message) => message,
+        None => PostedMessage::default()
+      }
     }
 }
 
@@ -123,15 +113,16 @@ mod tests {
     use super::*;
     use near_sdk::test_utils::VMContextBuilder;
     use near_sdk::{testing_env, VMContext, Balance};
+    use chrono;
 
 
     fn sender() -> AccountId {
       "bob_near".parse().unwrap()
     }
 
-    fn sender2() -> AccountId {
-      "alice_near".parse().unwrap()
-    }
+    // fn sender2() -> AccountId {
+    //   "alice_near".parse().unwrap()
+    // }
 
 
     fn get_context(is_view: bool, amount: Balance) -> VMContext {
@@ -143,7 +134,7 @@ mod tests {
     }
 
     fn debug(contract: &MessageList) {
-      eprintln!("{:#?}", contract.getMessages());
+      eprintln!("{:#?}", contract.get_messages());
       assert_eq!(1, 2, "DEBUG MODE ACTIVATED!");
     }
 
@@ -156,7 +147,7 @@ mod tests {
 
       let date = chrono::offset::Utc::now().to_string();
 
-      contract.addMessage(our_message.to_owned(), date);
+      contract.add_message(our_message.to_owned(), date);
 
       (contract, our_message)
     }
@@ -167,11 +158,15 @@ mod tests {
       let (contract, our_message) = single_message(0);
 
       // debug(&contract);
-      let first_msg = contract.getMessages()[0].clone();
+      let first_msg = contract.get_messages()[0].clone();
 
       assert_eq!(
         first_msg.text,
         our_message.to_owned()
+      );
+      assert_eq!(
+        first_msg.money,
+        0f64
       );
       assert_eq!(
         first_msg.sender,
@@ -189,10 +184,15 @@ mod tests {
     fn test_single_message_premium() {
       let (contract, _our_message) = single_message(PREMIUM_LIMIT);
 
-      let first_msg = contract.getMessages()[0].clone();
+      // debug(&contract);
+      let first_msg = contract.get_messages()[0].clone();
       assert_eq!(
         first_msg.premium,
         true 
+      );
+      assert_eq!(
+        first_msg.money,
+        0.01f64
       );
     }
 
@@ -201,10 +201,10 @@ mod tests {
       let (mut contract, our_message) = single_message(0);
 
       let second_msg: &str = "how bout Alice?";
-      contract.addMessage(second_msg.to_owned(), chrono::offset::Utc::now().to_string());
+      contract.add_message(second_msg.to_owned(), chrono::offset::Utc::now().to_string());
       // debug(&contract);
 
-      let messages = contract.getMessages();
+      let messages = contract.get_messages();
 
       assert_eq!(messages.len(), 2);
 
@@ -221,10 +221,10 @@ mod tests {
       let (mut contract, our_message) = single_message(0);
 
       for i in 0..11 {
-        contract.addMessage(i.to_string(), chrono::offset::Utc::now().to_string());
+        contract.add_message(i.to_string(), chrono::offset::Utc::now().to_string());
       }
 
-      let messages = contract.getMessages();
+      let messages = contract.get_messages();
 
       assert!(
         messages.len() <= MESSAGE_LIMIT as usize,
