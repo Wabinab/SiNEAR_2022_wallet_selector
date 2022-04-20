@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Big from 'big.js';
 
 
-const render_based_on_page = (current_page, contract)  => {
+const render_based_on_page = (current_page, get_single_message)  => {
   const [message, setMessage] = useState({
     premium: '',
     money: '',
@@ -11,11 +11,18 @@ const render_based_on_page = (current_page, contract)  => {
     text: '',
     datetime: ''
   });
-  contract.get_single_message({
-    index: parseInt(current_page.split('/')[2])
-  }).then((message) => {
+
+  get_single_message(
+    parseInt(current_page.split('/')[2])
+  ).then((message) => {
     setMessage(message);
   });
+
+  // contract.get_single_message({
+  //   index: parseInt(current_page.split('/')[2])
+  // }).then((message) => {
+  //   setMessage(message);
+  // });
 
   return (
     <div>
@@ -37,12 +44,14 @@ const render_based_on_page = (current_page, contract)  => {
   
 }
 
-export default function Form({ onSubmit, currentUser, current_page, contract }) {
+export default function Form({ onSubmit, current_page, get_single_message }) {
   if (current_page == "/") {
+    var account = window.account;
+
     return (
       <form onSubmit={onSubmit}>
         <fieldset id="fieldset">
-          <p>Sign the guest book, { currentUser.accountId }!</p>
+          <p>Sign the guest book, { account.account_id }!</p>
           <p className="highlight">
             <label htmlFor="message">Message:</label>
             <input
@@ -58,7 +67,8 @@ export default function Form({ onSubmit, currentUser, current_page, contract }) 
               autoComplete="off"
               defaultValue={'0'}
               id="donation"
-              max={Big(currentUser.balance).div(10 ** 24)}
+              max={Big(account.amount).div(10 ** 24).toString()}
+              // max="10"
               min="0"
               step="0.01"
               type="number"
@@ -72,14 +82,17 @@ export default function Form({ onSubmit, currentUser, current_page, contract }) 
       </form>
     );
   } else {
-    return render_based_on_page(current_page, contract)
+    return render_based_on_page(current_page, get_single_message)
+    // return 'hi'
   }
 }
 
 Form.propTypes = {
   onSubmit: PropTypes.func.isRequired,
-  currentUser: PropTypes.shape({
-    accountId: PropTypes.string.isRequired,
-    balance: PropTypes.string.isRequired
-  })
+  current_page: PropTypes.string.isRequired,
+
+  // currentUser: PropTypes.shape({
+  //   accountId: PropTypes.string.isRequired,
+  //   balance: PropTypes.string.isRequired
+  // })
 };

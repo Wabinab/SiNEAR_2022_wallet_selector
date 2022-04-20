@@ -116,9 +116,12 @@ button {
 }
 
 .is-premium {
-  border-left: 0.25em solid var(--secondary);
+  border-left: 0.5em solid var(--secondary);
   padding-left: 0.25em;
   margin-left: -0.5em;
+  border-right: 0.5em solid var(--secondary);
+  padding-right: 0.25em;
+  margin-right: -0.5em;
 }
 
 .articles {

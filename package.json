@@ -33,6 +33,9 @@
     "shelljs": "~0.8.5"
   },
   "dependencies": {
+    "@near-wallet-selector/core": "^3.0.1",
+    "@near-wallet-selector/near-wallet": "^3.0.1",
+    "@near-wallet-selector/sender": "^3.0.1",
     "big.js": "^6.1.1",
     "env-cmd": "^10.1.0",
     "near-api-js": "^0.44.2",
