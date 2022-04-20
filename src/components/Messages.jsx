@@ -10,7 +10,7 @@ export default function Messages({ messages }) {
           {messages.map((message, i) =>
             // TODO: format as cards, add timestamp
             <li className="articles" key={i}>
-              <a href={"/message/" + i} className="articles">
+              <a href={"/" + i} className="articles">
                 <p key={i} className={message.premium ? 'is-premium' : ''}>
                   <strong className='articles'>{message.sender}</strong><br/>
                   (on <u className="articles">{message.datetime}</u>)<br/><br />
