@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import getConfig from './config.js';
 import * as nearAPI from 'near-api-js';
+import sender_icon from './assets/sender-wallet.png';
+import near_icon from './assets/near-wallet.png';
 
 import NearWalletSelector, { AccountInfo } from "@near-wallet-selector/core";
 import { setupNearWallet } from "@near-wallet-selector/near-wallet";
@@ -30,8 +32,8 @@ async function initContract() {
     network: "testnet",
     contractId: CONTRACT_NAME,
     wallets: [
-      setupNearWallet(),
-      setupSender(),
+      setupNearWallet({'iconUrl': near_icon}),
+      setupSender({'iconUrl': sender_icon}),
     ],
   });
 

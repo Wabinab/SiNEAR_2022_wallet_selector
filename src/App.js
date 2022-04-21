@@ -14,12 +14,14 @@ const App = ({ nearConfig }) => {
   const [messages, setMessages] = useState([]);
   const [account, setAccount] = useState({});
   const [loading, setLoading] = useState(true);
+  const [accountId, setAccountId] = useState();
 
   const selector = window.selector;
 
   if (window.accountId == '') {
     selector.getAccounts().then((value) => {
       window.accountId = value[0].accountId;
+      setAccountId(null);
     });
   }
 
@@ -43,6 +45,10 @@ const App = ({ nearConfig }) => {
   }
 
   useEffect(() => {
+    // if (!accountId) {
+    //   return setAccount(null);
+    // }
+
     setLoading(true);
 
     get_account().then((value) => {
@@ -142,7 +148,14 @@ const App = ({ nearConfig }) => {
   };
 
   const signIn = () => {
-    selector.show()
+    selector.show().then(() => {
+      setLoading(true);
+
+      if (selector.isSignedIn()) {
+        setLoading(false);
+        window.location.reload(false);
+      }
+    })
   };
 
   const signOut = () => {
