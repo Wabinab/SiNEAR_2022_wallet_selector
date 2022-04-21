@@ -2,6 +2,11 @@
 
 > This is a 2-step challenge where you will try to integrate Wallet Selector (near-wallet-selector) and showcase interaction with your modified Guest Book example.
 
+## Problems
+
+For sender wallet, the value that triggers the change occurs in the future, and can't be refreshed without manually refreshing the page. One can't get it to work yet (and not going to for this challenge, due to time restrictions). For now, just **manually refresh the page yourself if using Sender wallet.**
+
+## Instructions
 ### Step 1.  
 Clone the repository for the Guest Book example. You can follow the instructions here: https://examples.near.org/guest-book  
 
