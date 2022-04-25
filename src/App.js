@@ -17,6 +17,12 @@ const App = ({ nearConfig }) => {
   const [accountId, setAccountId] = useState();
 
   const selector = window.selector;
+  
+  const handleSignIn = () => {
+    window.location.reload();
+  }
+  
+  selector.on("signIn", handleSignIn);
 
   if (window.accountId == '') {
     selector.getAccounts().then((value) => {
